@@ -12,5 +12,6 @@ export default defineConfig({
     platform: 'neutral',
     nodeProtocol: true,
     sourcemap: true,
+    minify: false,
     external: [],
 });

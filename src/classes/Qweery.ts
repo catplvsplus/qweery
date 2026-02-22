@@ -1,3 +1,5 @@
+import type { ValueOrArray } from '../helpers/types.js';
+
 export class Qweery<T extends Qweery.Object> {
     public readonly data: T[];
 
@@ -31,8 +33,20 @@ export class Qweery<T extends Qweery.Object> {
         return new Qweery(this.data.slice(count));
     }
 
-    public limit(count: number): Qweery<T> {
+    public take(count: number): Qweery<T> {
         return new Qweery(this.data.slice(0, count));
+    }
+
+    public count(): number {
+        return this.data.length;
+    }
+
+    public first(): T|undefined {
+        return this.data[0];
+    }
+
+    public last(): T|undefined {
+        return this.data[this.data.length - 1];
     }
 
     public toArray(): T[] {
@@ -44,7 +58,6 @@ export class Qweery<T extends Qweery.Object> {
         if (!item) return false
 
         const keys = Object.keys(options) as (keyof T)[];
-        const AND: boolean[] = [];
 
         for (const key of keys) {
             if (key.toString().startsWith('$') || options[key] === undefined) continue;
@@ -87,13 +100,15 @@ export class Qweery<T extends Qweery.Object> {
                 value = item[key] === options[key];
             }
 
-            AND.push(value);
+            if (!value) return false;
         }
 
-        return AND.every(Boolean) && this.evaluateLogicalOperator(index, options);
+        return this.evaluateLogicalOperator(index, options);
     }
 
     private evaluateLogicalOperator(index: number, options: Qweery.WhereOptionLogicalOperators<T>): boolean {
+        let value = true;
+
         if (options.$NOT) {
             for (const option of  Array.isArray(options.$NOT) ? options.$NOT : [options.$NOT]) {
                 if (this.isItemMatch(index, option)) return false;
@@ -229,7 +244,6 @@ export class Qweery<T extends Qweery.Object> {
 }
 
 export namespace Qweery {
-    export type ValueOrArray<T> = T|T[];
     export type Object = object;
     export type StringPrimitive = string;
     export type NumericalPrimitive = number|bigint|Date;
