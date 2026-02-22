@@ -30,8 +30,8 @@
   ],
   "scripts": {
     "test": "bun test/*.test.ts",
-    "build": "tsdown",
-    "prepack": "tsdown"
+    "build": "bunx tsdown",
+    "prepack": "bunx tsdown"
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0"
