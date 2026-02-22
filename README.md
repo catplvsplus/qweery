@@ -1,6 +1,6 @@
 # qweery
 
-A simple type-safe array query builder.
+A simple type-safe ORM like query builder for structured arrays
 
 ## Installation
 

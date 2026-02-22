@@ -2,7 +2,7 @@
   "name": "qweery",
   "version": "0.0.1",
   "license": "MIT",
-  "description": "A simple array query library",
+  "description": "A simple type-safe ORM like query builder for structured arrays",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
