@@ -25,6 +25,7 @@
     "README.md"
   ],
   "scripts": {
+    "test": "bun test/*.test.ts",
     "build": "tsdown",
     "prepack": "tsdown"
   },
