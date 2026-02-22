@@ -1,6 +1,6 @@
 {
   "name": "qweery",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "description": "A simple type-safe ORM like query builder for structured arrays",
   "type": "module",
