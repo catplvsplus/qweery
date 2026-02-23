@@ -83,3 +83,23 @@ console.log(
 
 // Output: [{ name: 'Charlie', age: 35 }]
 ```
+
+```typescript
+console.log(
+    qweery
+        // name.includes('a') || age > 30
+        .where({
+            name: {
+                includes: 'a'
+            },
+            $OR: {
+                age: { greaterThan: 30 }
+            }
+        })
+        .skip(0)
+        .take(10)
+        .toArray()
+);
+
+// Output: [{ name: 'Charlie', age: 35 }, { name: 'David', age: 28 }]
+```
