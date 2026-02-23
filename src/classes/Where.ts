@@ -14,7 +14,7 @@ export class Where<T extends Qweery.Object> {
     }
 
     public satisfiesItem(options: Where.Options<T>, index: number): boolean {
-        const item = this.data.at(index);
+        const item = this.data[index];
         if (!item) return false;
 
         let value = true;
