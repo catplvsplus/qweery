@@ -7,23 +7,46 @@ export class Qweery<T extends Qweery.Object> {
         this.data = Array.from(data);
     }
 
-    public query(options: {
-        where?: Where.Options<T>;
+    public query<K extends keyof T>(options: {
+        select?: K[];
+        where?: Where.Options<Pick<T, K>>;
         skip?: number;
-        limit?: number;
-    }): T[] {
+        take?: number;
+    }): Pick<T, K>[] {
 
-        let result = new Where(this.data).filter(options.where || {});
+        let result = new Where<Pick<T, K>>(this.data).filter(options.where || {});
 
         if (options.skip) {
             result = result.slice(options.skip);
         }
 
-        if (options.limit) {
-            result = result.slice(0, options.limit);
+        if (options.take) {
+            result = result.slice(0, options.take);
+        }
+
+        if (options.select?.length) {
+            result = result.map(
+                item => options.select!.reduce((acc, key) => {
+                    acc[key] = item[key];
+                    return acc;
+                }, {} as Pick<T, K>)
+            );
         }
 
         return result;
+    }
+
+    public select<K extends keyof T>(...keys: K[]): Qweery<Pick<T, K>> {
+        return new Qweery(
+            keys.length
+            ? this.data.map(
+                item => keys.reduce((acc, key) => {
+                    acc[key] = item[key];
+                    return acc;
+                }, {} as Pick<T, K>)
+            )
+            : this.data
+        );
     }
 
     public where(options: Where.Options<T>): Qweery<T> {

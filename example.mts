@@ -1,5 +1,5 @@
 
-import { Qweery } from 'qweery';
+import { Qweery } from './src/classes/Qweery.js';
 
 const qweery = new Qweery([
     { name: 'Alice', age: 30 },
@@ -11,15 +11,16 @@ const qweery = new Qweery([
 console.log(
     qweery
         // name.includes('a') || age > 30
-        .where({
-            name: {
-                includes: 'a'
+        .query({
+            where: {
+                name: {
+                    includes: 'a'
+                },
+                $OR: {
+                    age: { greaterThan: 30 }
+                }
             },
-            $OR: {
-                age: { greaterThan: 30 }
-            }
+            skip: 1,
+            take: 2,
         })
-        .skip(0)
-        .take(10)
-        .toArray()
 );
