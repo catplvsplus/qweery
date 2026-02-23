@@ -86,4 +86,12 @@ describe('query', () => {
 
         expect(results).toEqual(expected);
     });
+
+    it('should return results with name fields only', () => {
+        const results = qweery.query({
+            select: ['name']
+        });
+
+        expect(results).toEqual(data.map(item => ({ name: item.name })));
+    });
 });
