@@ -51,7 +51,7 @@ describe('query', () => {
             }
         });
 
-        const expected = qweery.toArray().filter((item) => {
+        const expected = qweery.all().filter((item) => {
             return (
                 item.name.startsWith('A') ||
                 item.age < 50
@@ -77,7 +77,7 @@ describe('query', () => {
             }
         });
 
-        const expected = qweery.toArray().filter((item) => {
+        const expected = qweery.all().filter((item) => {
             return !(
                 item.name.startsWith('A') ||
                 item.age < 100

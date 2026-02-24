@@ -40,7 +40,7 @@ console.log(
         })
         .skip(0)
         .take(10)
-        .toArray()
+        .all()
 );
 
 // Output: []
@@ -58,7 +58,7 @@ console.log(
         })
         .skip(0)
         .take(10)
-        .toArray()
+        .all()
 );
 
 // Output: [{ name: 'Alice', age: 30 }, { name: 'Charlie', age: 35 }]
@@ -79,7 +79,7 @@ console.log(
         })
         .skip(0)
         .take(10)
-        .toArray()
+        .all()
 );
 
 // Output: [{ name: 'Charlie', age: 35 }]
@@ -99,7 +99,7 @@ console.log(
         })
         .skip(0)
         .take(10)
-        .toArray()
+        .all()
 );
 
 // Output: [{ name: 'Charlie', age: 35 }, { name: 'David', age: 28 }]

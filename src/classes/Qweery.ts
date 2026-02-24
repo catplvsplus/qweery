@@ -73,7 +73,7 @@ export class Qweery<T extends Qweery.Object> {
         return this.data[this.data.length - 1];
     }
 
-    public toArray(): T[] {
+    public all(): T[] {
         return this.data;
     }
 }
