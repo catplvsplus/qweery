@@ -94,4 +94,14 @@ describe('query', () => {
 
         expect(results).toEqual(data.map(item => ({ name: item.name })));
     });
+
+    it('should return results for age greater than 30', () => {
+        const results = qweery.query({
+            where: {
+                age: val => val > 30
+            }
+        });
+
+        expect(results).toEqual(data.filter(item => item.age > 30));
+    });
 });
