@@ -4,7 +4,7 @@ export class Qweery<T extends Qweery.Object> {
     protected readonly data: T[];
 
     constructor(data: Iterable<T>) {
-        this.data = Array.isArray(data) ? data : Array.from(data);
+        this.data = Array.from(data);
     }
 
     public query<K extends keyof T>(options: {
