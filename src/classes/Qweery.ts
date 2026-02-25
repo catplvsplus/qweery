@@ -4,7 +4,7 @@ export class Qweery<T extends Qweery.Object> {
     protected readonly data: T[];
 
     constructor(data: Iterable<T>) {
-        this.data = Array.from(data);
+        this.data = Array.isArray(data) ? data : Array.from(data);
     }
 
     public query<K extends keyof T>(options: {
@@ -14,7 +14,7 @@ export class Qweery<T extends Qweery.Object> {
         take?: number;
     }): Pick<T, K>[] {
 
-        let result = new Where<Pick<T, K>>(this.data).filter(options.where || {});
+        let result = Where.filter<Pick<T, K>>(this.data, options.where || {});
 
         if (options.skip) {
             result = result.slice(options.skip);
@@ -50,7 +50,7 @@ export class Qweery<T extends Qweery.Object> {
     }
 
     public where(options: Where.Options<T>): Qweery<T> {
-        return new Qweery(new Where(this.data).filter(options || {}));
+        return new Qweery(Where.filter(this.data, options || {}));
     }
 
     public skip(count: number): Qweery<T> {

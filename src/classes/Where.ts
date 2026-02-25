@@ -3,18 +3,23 @@ import { Primitive } from './Primitive.js';
 import type { Qweery } from './Qweery.js';
 
 export class Where<T extends Qweery.Object> {
-    public readonly data: T[];
+    private constructor() {}
 
-    public constructor(data: Iterable<T>) {
-        this.data = Array.from(data);
+    public static filter<T extends Qweery.Object>(data: Iterable<T>, where: Where.Options<T>): T[] {
+        const items = Array.isArray(data) ? data : Array.from(data);
+        const result = [];
+
+        for (let i = 0; i < items.length; i++) {
+            if (this.satisfiesItem(where, items, i)) {
+                result.push(items[i]);
+            }
+        }
+
+        return result;
     }
 
-    public filter(options: Where.Options<T>): T[] {
-        return this.data.filter((_, index) => this.satisfiesItem(options, index));
-    }
-
-    public satisfiesItem(options: Where.Options<T>, index: number): boolean {
-        const item = this.data[index];
+    public static satisfiesItem<T extends Qweery.Object>(options: Where.Options<T>, items: T[], index: number): boolean {
+        const item = items[index];
         if (!item) return false;
 
         let value = true;
@@ -27,21 +32,21 @@ export class Where<T extends Qweery.Object> {
                     case '$NOT':
                         value = value && !(
                             Array.isArray(conditions)
-                                ? conditions.every(condition => this.satisfiesItem(condition, index))
-                                : this.satisfiesItem(conditions, index)
+                                ? conditions.every(condition => this.satisfiesItem(condition, items, index))
+                                : this.satisfiesItem(conditions, items, index)
                         );
                         break;
                     case '$AND':
                         value = value && (
                             Array.isArray(conditions)
-                                ? conditions.every(condition => this.satisfiesItem(condition, index))
-                                : this.satisfiesItem(conditions, index)
+                                ? conditions.every(condition => this.satisfiesItem(condition, items, index))
+                                : this.satisfiesItem(conditions, items, index)
                         );
                         break;
                     case '$OR':
                         value = Array.isArray(conditions)
-                            ? value && conditions.some(condition => this.satisfiesItem(condition, index))
-                            : value || this.satisfiesItem(conditions, index);
+                            ? value && conditions.some(condition => this.satisfiesItem(condition, items, index))
+                            : value || this.satisfiesItem(conditions, items, index);
                         break;
                 }
 
@@ -53,7 +58,7 @@ export class Where<T extends Qweery.Object> {
             const itemValue = item[key as keyof T];
 
             if (filter instanceof Function) {
-                value = value && filter(itemValue, item, index, this.data);
+                value = value && filter(itemValue, item, index, items);
                 continue;
             }
 
@@ -104,9 +109,3 @@ export namespace Where {
         return value === '$AND' || value === '$OR' || value === '$NOT';
     }
 }
-
-const w = new Where([
-    { name: 'Alice', age: 30, sports: ['Football', 'Basketball'] },
-    { name: 'Bob', age: 25, sports: ['Football', 'Basketball'] },
-    { name: 'Charlie', age: 35, sports: ['Football', 'Basketball'] }
-]);
