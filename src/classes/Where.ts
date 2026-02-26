@@ -10,7 +10,7 @@ export class Where<T extends Qweery.Object> {
         const result = [];
 
         for (let i = 0; i < items.length; i++) {
-            if (this.satisfiesItem(where, items, i)) {
+            if (Where.satisfiesItem(where, items, i)) {
                 result.push(items[i]);
             }
         }
@@ -26,63 +26,93 @@ export class Where<T extends Qweery.Object> {
 
         for (const key in options) {
             if (Where.isLogicalOperator(key)) {
-                const conditions = options[key as keyof T] as ValueOrArray<Where.Options<T>>;
-
-                switch (key) {
-                    case '$NOT':
-                        value = value && !(
-                            Array.isArray(conditions)
-                                ? conditions.every(condition => this.satisfiesItem(condition, items, index))
-                                : this.satisfiesItem(conditions, items, index)
-                        );
-                        break;
-                    case '$AND':
-                        value = value && (
-                            Array.isArray(conditions)
-                                ? conditions.every(condition => this.satisfiesItem(condition, items, index))
-                                : this.satisfiesItem(conditions, items, index)
-                        );
-                        break;
-                    case '$OR':
-                        value = Array.isArray(conditions)
-                            ? value && conditions.some(condition => this.satisfiesItem(condition, items, index))
-                            : value || this.satisfiesItem(conditions, items, index);
-                        break;
-                }
+                value = Where.evaluateLogicalOperators({
+                    currentBooleanValue: value,
+                    items,
+                    index,
+                    operator: key,
+                    conditions: options[key as keyof T] as ValueOrArray<Where.Options<T>>
+                });
 
                 continue;
             }
 
 
-            const filter = options[key as keyof T] as Where.Filter<T, keyof T>;
-            const itemValue = item[key as keyof T];
+            value = Where.evaluateValueFilters({
+                currentBooleanValue: value,
+                items,
+                index,
+                key: key as keyof T,
+                filter: options[key as keyof T] as Where.Filter<T, keyof T>
+            });
+        }
 
-            if (filter instanceof Function) {
-                value = value && filter(itemValue, item, index, items);
-                continue;
+        return value;
+    }
+
+    public static evaluateValueFilters<T extends Qweery.Object>(options: {
+        currentBooleanValue: boolean;
+        items: T[];
+        index: number;
+        key: keyof T;
+        filter: Where.Filter<T, keyof T>;
+    }): boolean {
+        const value = options.currentBooleanValue;
+        const item = options.items[options.index];
+        const itemValue = item[options.key];
+
+        if (options.filter && Where.isFunctionFilter<T, keyof T>(options.filter)) {
+            return value && options.filter(itemValue, item, options.index, options.items);
+        }
+
+        if (typeof options.filter === 'object') {
+            if (typeof itemValue === 'string') {
+                return value && Primitive.statisfiesString(itemValue, options.filter as Primitive.StringFilters<Primitive.String>);
             }
 
-            if (typeof filter === 'object') {
-                if (typeof itemValue === 'string') {
-                    value = value && Primitive.statisfiesString(itemValue, filter as Primitive.StringFilters<Primitive.String>);
-                    continue;
-                }
-
-                if (Array.isArray(itemValue)) {
-                    value = value && Primitive.statisfiesArray(itemValue, filter as Primitive.ArrayFilters<Primitive.Array>);
-                    continue;
-                }
-
-                if (Primitive.isNumerical(itemValue)) {
-                    value = value && Primitive.statisfiesNumerical(itemValue, filter as Primitive.NumericalFilters<Primitive.Numerical>);
-                    continue;
-                }
-
-                value = value && Primitive.satisfiesValue(itemValue, filter as Primitive.Filters<any>);
-                continue;
+            if (Array.isArray(itemValue)) {
+                return value && Primitive.statisfiesArray(itemValue, options.filter as Primitive.ArrayFilters<Primitive.Array>);
             }
 
-            value = value && (itemValue === filter);
+            if (Primitive.isNumerical(itemValue)) {
+                return value && Primitive.statisfiesNumerical(itemValue, options.filter as Primitive.NumericalFilters<Primitive.Numerical>);
+            }
+
+            return value && Primitive.satisfiesValue(itemValue, options.filter as Primitive.Filters<any>);
+        }
+
+        return value && (itemValue === options.filter);
+    }
+
+    public static evaluateLogicalOperators<T extends Qweery.Object>(options: {
+        currentBooleanValue: boolean;
+        items: T[];
+        index: number;
+        operator: keyof Where.LogicalOperators<T>;
+        conditions: ValueOrArray<Where.Options<T>>;
+    }): boolean {
+        let value = options.currentBooleanValue;
+
+        switch (options.operator) {
+            case '$NOT':
+                value = value && !(
+                    Array.isArray(options.conditions)
+                        ? options.conditions.every(condition => Where.satisfiesItem(condition, options.items, options.index))
+                        : Where.satisfiesItem(options.conditions, options.items, options.index)
+                );
+                break;
+            case '$AND':
+                value = value && (
+                    Array.isArray(options.conditions)
+                        ? options.conditions.every(condition => Where.satisfiesItem(condition, options.items, options.index))
+                        : Where.satisfiesItem(options.conditions, options.items, options.index)
+                );
+                break;
+            case '$OR':
+                value = Array.isArray(options.conditions)
+                    ? value && options.conditions.some(condition => Where.satisfiesItem(condition, options.items, options.index))
+                    : value || Where.satisfiesItem(options.conditions, options.items, options.index);
+                break;
         }
 
         return value;
@@ -90,16 +120,19 @@ export class Where<T extends Qweery.Object> {
 }
 
 export namespace Where {
+    export type FunctionFilter<T extends Qweery.Object, K extends keyof T> = (value: T[K], object: T, index: number, array: T[]) => boolean;
+
+    export type Filter<T extends Qweery.Object, K extends keyof T> =
+        |T[K]
+        |FunctionFilter<T, K>
+        |(Primitive.FilterType<T[K]> & LogicalOperators<T>);
+
+
     export type KeyFilters<T extends Qweery.Object> = {
         [K in keyof T]?: Filter<T, K>;
     }
 
-    export type Filter<T extends Qweery.Object, K extends keyof T> = 
-        |T[K]
-        |((value: T[K], object: T, index: number, array: T[]) => boolean)
-        |(Primitive.FilterType<T[K]> & LogicalOperators<T>)
-
-    export interface LogicalOperators<T extends Qweery.Object> extends Partial<Record<'$AND'|'$OR'|'$NOT', ValueOrArray<Options<T>>>>{
+    export interface LogicalOperators<T extends Qweery.Object> extends Partial<Record<'$AND'|'$OR'|'$NOT', ValueOrArray<Options<T>>>> {
         //
     }
 
@@ -107,5 +140,9 @@ export namespace Where {
 
     export function isLogicalOperator(value: unknown): value is keyof LogicalOperators<any> {
         return value === '$AND' || value === '$OR' || value === '$NOT';
+    }
+
+    export function isFunctionFilter<T extends Qweery.Object, K extends keyof T>(value: unknown): value is FunctionFilter<T, K> {
+        return typeof value === 'function';
     }
 }

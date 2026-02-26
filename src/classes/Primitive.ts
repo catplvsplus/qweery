@@ -1,4 +1,6 @@
 export class Primitive {
+    private constructor() {}
+
     public static satisfiesValue<T>(value: T, options: Primitive.Filters<T>): boolean {
         if (Primitive.isDefined(options.equals) && value !== options.equals) {
             return false;
