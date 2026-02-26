@@ -10,10 +10,9 @@ npm install qweery
 
 ## Highlights
 - Typescript first design, ensuring type safety and autocompletion.
-- ORM-like querying.
-- Chainable API for building complex queries.
+- Very familiar API.
 - Zero dependencies.
-- Fast? I don't really know.
+- Fast? Not really.
 
 ## Usage
 
