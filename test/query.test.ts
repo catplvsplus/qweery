@@ -104,4 +104,29 @@ describe('query', () => {
 
         expect(results).toEqual(data.filter(item => item.age > 30));
     });
+
+    it('should return results skipping first 10', () => {
+        const results = qweery.query({
+            skip: 10
+        });
+
+        expect(results).toEqual(data.slice(10));
+    });
+
+    it('should return results taking first 10', () => {
+        const results = qweery.query({
+            take: 10
+        });
+
+        expect(results).toEqual(data.slice(0, 10));
+    });
+
+    it('should return results skipping first 10 and taking 10', () => {
+        const results = qweery.query({
+            skip: 10,
+            take: 10
+        });
+
+        expect(results).toEqual(data.slice(10, 20));
+    });
 });

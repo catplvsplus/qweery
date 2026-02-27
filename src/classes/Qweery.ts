@@ -21,8 +21,10 @@ export class Qweery<T extends Qweery.Object> {
 
         let result = Where.filter<Pick<T, K>>(this.data, options.where || {});
 
-        if (options.skip) result = result.slice(options.skip);
-        if (options.take) result = result.slice(0, options.take);
+        result = result.slice(
+            options.skip ?? 0,
+            options.take ? (options.skip ?? 0) + options.take : undefined
+        );
 
         if (options.select?.length) {
             result = result.map(item => {
